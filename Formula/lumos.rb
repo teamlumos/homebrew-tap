@@ -1,10 +1,10 @@
 class Lumos < Formula
 
     desc "Lumos CLI"
-    homepage "https://example.com"
-    url "https://github.com/teamlumos/lumos-cli-releases/releases/download/0.4.0/lumos"
-    sha256 "0bdea86bb74e090a00533a13f111728951746389c28094a1246b5596c2a5e72a"  # Replace with the SHA256 checksum of the binary
-    version "0.4.0"
+    homepage "https://app.lumosidentity.com"
+    url "https://github.com/teamlumos/lumos-cli-releases/releases/download/0.5.0/lumos"
+    sha256 "8c903d6481d103f0d8ce9071b1c35a861de8a9a059cf87dbb6de70ed9d07c9cf"  # Replace with the SHA256 checksum of the binary
+    version "0.5.0"
 
     def install
         puts("hello from lumos install")
