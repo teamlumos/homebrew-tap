@@ -2,11 +2,12 @@ class Lumos < Formula
 
     desc "Lumos CLI"
     homepage "https://app.lumosidentity.com"
-    url "https://github.com/teamlumos/lumos-cli-releases/releases/download/0.6.1/lumos"
-    sha256 "8825014adde0bfd99c1df486bf4eca7f48ce3aa55562110b9da862943ae1b50a"
-    version "0.6.1"
+    url "https://github.com/teamlumos/lumos-cli-releases/releases/download/0.7.0/lumos.tar.gz"
+    sha256 "0bdd5e5e72c390413eabd4bd09cee124ebaa530f758887c1e65d6c01e3851a86"
+    version "0.7.0"
 
     def install
-        bin.install "lumos"
+        libexec.install Dir["*"]
+        bin.write_exec_script libexec/"lumos"
     end
 end
