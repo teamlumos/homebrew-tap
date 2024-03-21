@@ -2,9 +2,9 @@ class LumosAT1 < Formula
 
     desc "Lumos CLI"
     homepage "https://app.lumosidentity.com"
-    url "https://github.com/teamlumos/lumos-cli-releases/releases/download/0.6.1/lumos.tar.gz"
-    sha256 "8825014adde0bfd99c1df486bf4eca7f48ce3aa55562110b9da862943ae1b50a"
-    version "0.6.1"
+    url "https://github.com/teamlumos/lumos-cli-releases/releases/download/1.0.0/lumos.tar.gz"
+    sha256 "b5e7724063a4af780aa2d642a79b975c2cd3ff42c6cd60cdf131ca9614dee72b"
+    version "1.0.0"
 
     def install
         bin.install "lumos"
