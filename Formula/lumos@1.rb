@@ -7,6 +7,7 @@ class LumosAT1 < Formula
     version "1.0.0"
 
     def install
-        bin.install "lumos"
+        libexec.install Dir["*"]
+        bin.write_exec_script libexec/"lumos"
     end
 end
