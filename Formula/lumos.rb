@@ -7,7 +7,7 @@ class Lumos < Formula
     version "0.5.1"
 
     def install
-        bin.install "lumos"
+        bin.install "lumos.tar.gz"
     end
 
     test do
