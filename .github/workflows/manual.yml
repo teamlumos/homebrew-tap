@@ -8,6 +8,11 @@ jobs:
     runs-on: macos-12
 
     steps:
+      - name: Checkout homebrew
+        uses: actions/checkout@v2
+
+      - run: ls -a
+      
       - name: Checkout CLI
         uses: actions/checkout@v2
         with:
@@ -16,11 +21,6 @@ jobs:
           
       - run: ls -a
           
-      - name: Checkout homebrew
-        uses: actions/checkout@v2
-
-      - run: ls -a
-
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
