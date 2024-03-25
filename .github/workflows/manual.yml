@@ -58,9 +58,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          RELEASE_FILE=${{ steps.build.outputs.release-file }}"
-          FILE_SHA=${{ steps.build.outputs.file-sha }}"
-          LUMOS_VERSION=${{ steps.install-dependencies.outputs.lumos-version }}"
+          RELEASE_FILE=${{ steps.build.outputs.release-file }}
+          FILE_SHA=${{ steps.build.outputs.file-sha }}
+          LUMOS_VERSION=${{ steps.install-dependencies.outputs.lumos-version }}
           echo "Creating tag & release $LUMOS_VERSION"
           git tag $LUMOS_VERSION
           git push --tags
