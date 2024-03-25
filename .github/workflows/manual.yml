@@ -73,6 +73,6 @@ jobs:
           sed -i '' "s/$BREW_VERSION/$LUMOS_VERSION/" "./Formula/lumos.rb"
           sed -i '' "s/sha256 \".*\"/sha256 \"$sha\"/" "./Formula/lumos.rb"
           msg="Update lumos from $BREW_VERSION to $LUMOS_VERSION"
-          git commit -am $msg
+          git commit -am "$msg"
           git push
 
