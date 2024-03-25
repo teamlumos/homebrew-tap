@@ -5,7 +5,7 @@ on: workflow_dispatch
 jobs:
   build:
     name: Build and Release
-    runs-on: macos-12
+    runs-on: macos-13
 
     steps:
       - name: Checkout CLI
@@ -28,7 +28,7 @@ jobs:
           brew install teamlumos/tap/lumos
           poetry install
           brew_version=$(lumos --version | awk '{print $3}')
-          echo Current version: $brew_version
+          echo Current version on brew: $brew_version
           lumos_version=$(poetry run python -m lumos --version | awk '{print $3}')
           echo New version: $lumos_version
   
@@ -52,7 +52,7 @@ jobs:
         id: create_tag
         run: |
           git tag $lumos_version
-          git push origin $lumos_version
+          git push --tags
           
       - name: Create Release
         env:
