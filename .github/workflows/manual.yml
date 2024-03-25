@@ -47,14 +47,14 @@ jobs:
         uses: actions/checkout@v2
 
       - run: pwd
+      
+      - run: echo "Creating tag & release $lumos_version"
 
       - name: Create tag & release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo Creating tag "$lumos_version"
           git tag $lumos_version
           git push --tags
-          echo Creating release "$lumos_version"
           gh release create $lumos_version --title "$lumos_version" --notes "$$lumos_version" --latest "$release_file"
 
