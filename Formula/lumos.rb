@@ -2,8 +2,8 @@ class Lumos < Formula
 
     desc "Lumos CLI"
     homepage "https://app.lumosidentity.com"
-    url "https://github.com/teamlumos/lumos-cli-releases/releases/download/0.7.1/lumos.tar.gz"
-    sha256 "772e05e6b0a1680637bdc5513b15a067773997df4b4a06efeeb8111d8046ce23"
+    url "https://github.com/teamlumos/homebrew-tap/releases/download/0.7.1/lumos.tar.gz"
+    sha256 "b3eaa450b04c7c10048f081dff947f7d17c2831d412cf520d2c346069ae15afe"
     version "0.7.1"
 
     def install
