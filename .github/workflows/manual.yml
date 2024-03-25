@@ -5,7 +5,7 @@ on: workflow_dispatch
 jobs:
   build:
     name: Build and Release
-    runs-on: macos-13
+    runs-on: macos-12
 
     steps:
       - name: Checkout CLI
@@ -48,14 +48,13 @@ jobs:
 
       - run: pwd
 
-      - name: Create tag
-        id: create_tag
-        run: |
-          git tag $lumos_version
-          git push --tags
-          
-      - name: Create Release
+      - name: Create tag & release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create $lumos_version --title "$lumos_version" --notes "$$lumos_version" --latest "$release_file"
+        run: |
+          echo Creating tag "$lumos_version"
+          git tag $lumos_version
+          git push --tags
+          echo Creating release "$lumos_version"
+          gh release create $lumos_version --title "$lumos_version" --notes "$$lumos_version" --latest "$release_file"
 
