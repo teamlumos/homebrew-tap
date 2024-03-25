@@ -65,4 +65,14 @@ jobs:
           git tag $LUMOS_VERSION
           git push --tags
           gh release create $LUMOS_VERSION --title "$LUMOS_VERSION" --notes "$LUMOS_VERSION" --latest "$RELEASE_FILE"
+     
+      - name: Update formula
+        run: |
+          LUMOS_VERSION=${{ steps.install-dependencies.outputs.lumos-version }}
+          BREW_VERSION=${{ steps.install-dependencies.outputs.brew-version }}
+          sed -i '' "s/$BREW_VERSION/$LUMOS_VERSION/" "./Formula/lumos.rb"
+          sed -i '' "s/sha256 \".*\"/sha256 \"$sha\"/" "./Formula/lumos.rb"
+          msg="Update lumos from $BREW_VERSION to $LUMOS_VERSION"
+          git commit -am $msg
+          git push
 
