@@ -8,22 +8,13 @@ jobs:
     runs-on: macos-12
 
     steps:
-      - name: Connect to CLI
-        run: /usr/bin/ssh-add --apple-use-keychain - <<< "${{ secrets.CLI_PRIVATE_KEY }}"
-        
-      - name: Checkout homebrew
-        uses: actions/checkout@v2
-
-      - run: cd ..
-      
       - name: Checkout CLI
         uses: actions/checkout@v2
         with:
           repository: teamlumos/hackathon-cli
           ref: main
-          
-      - run: ls -a
-      - run: cd ..
+          ssh-key: ${{ secrets.CLI_PRIVATE_KEY }}
+
       - run: ls -a
           
       - name: Set up Python
@@ -33,6 +24,14 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd hackathon-cli
           pip install poetry
           brew install coreutils
+      - name: Install Dependencies
+        run: |
+          poetry run pyinstaller --onefile lumos/__main__.py
+          cd ./dist
+          mv __main__ lumos
+          release_file=$(pwd)/lumos
+          echo $release_file
+          sha=$(sha256sum $release_file | cut -d ' ' -f1)
+          echo $sha
