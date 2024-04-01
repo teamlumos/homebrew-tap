@@ -59,7 +59,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           RELEASE_FILE=${{ steps.build.outputs.release-file }}
-          FILE_SHA=${{ steps.build.outputs.file-sha }}
           LUMOS_VERSION=${{ steps.install-dependencies.outputs.lumos-version }}
           echo "Creating tag & release $LUMOS_VERSION"
           git tag $LUMOS_VERSION
@@ -70,8 +69,9 @@ jobs:
         run: |
           LUMOS_VERSION=${{ steps.install-dependencies.outputs.lumos-version }}
           BREW_VERSION=${{ steps.install-dependencies.outputs.brew-version }}
+          FILE_SHA=${{ steps.build.outputs.file-sha }}
           sed -i '' "s/$BREW_VERSION/$LUMOS_VERSION/" "./Formula/lumos.rb"
-          sed -i '' "s/sha256 \".*\"/sha256 \"$sha\"/" "./Formula/lumos.rb"
+          sed -i '' "s/sha256 \".*\"/sha256 \"$FILE_SHA\"/" "./Formula/lumos.rb"
           msg="Update lumos from $BREW_VERSION to $LUMOS_VERSION"
           git commit -am "$msg"
           git push
