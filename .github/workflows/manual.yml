@@ -38,8 +38,8 @@ jobs:
       - name: Build
         id: build
         run: |
-          poetry run pyinstaller --onefile lumos/__main__.py
-          cd ./dist
+          poetry run pyinstaller lumos/__main__.py
+          cd ./dist/__main__
           mv __main__ lumos
           tar -czf lumos.tar.gz *
           mv lumos.tar.gz ~
