@@ -1,6 +1,12 @@
 name: Build and Release
 
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+    inputs:
+      branchName:
+        description: 'Hackathon CLI repo branch'     
+        required: true
+        default: 'main'
 
 jobs:
   build:
@@ -12,7 +18,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: teamlumos/hackathon-cli
-          ref: main
+          ref: ${{ github.event.inputs.branchName }}
           ssh-key: ${{ secrets.CLI_PRIVATE_KEY }}
 
       - name: Set up Python
