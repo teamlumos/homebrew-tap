@@ -1,4 +1,4 @@
-class Lumos < FormulaPrerelease
+class LumosPrerelease < Formula
 
     desc "Lumos CLI"
     homepage "https://github.com/teamlumos/homebrew-tap"
