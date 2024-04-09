@@ -32,11 +32,7 @@ jobs:
           pip install poetry
           brew install coreutils
           brew install gh
-          if [ "${{ github.event.inputs.branchName }}" != "main" ]; then
-              brew install teamlumos/tap/lumos-prerelease
-          else
-              brew install teamlumos/tap/lumos
-          fi
+          brew install teamlumos/tap/lumos
           poetry install
           BREW_VERSION=$(lumos --version | awk '{print $3}')
           echo Current version on brew: $BREW_VERSION
@@ -70,15 +66,15 @@ jobs:
         run: |
           RELEASE_FILE=${{ steps.build.outputs.release-file }}
           LUMOS_VERSION=${{ steps.install-dependencies.outputs.lumos-version }}
-          echo "Creating tag & release $LUMOS_VERSION"
           TAG=$LUMOS_VERSION
           if [ "${{ github.event.inputs.branchName }}" != "main" ]; then
               TAG=$LUMOS_VERSION-prerelease
           fi
           if [ $(git tag -l "$TAG") ]; then
-              echo "Tag already created, updating file"
+              echo "Tag $TAG already created, updating file"
               gh release edit $TAG "$RELEASE_FILE"
           else
+              echo "Creating tag & release $TAG"
               git tag $TAG
               git push --tags
               if [ "${{ github.event.inputs.branchName }}" != "main" ]; then
@@ -104,6 +100,9 @@ jobs:
           sed -i '' "s/$BREW_VERSION/$LUMOS_VERSION/" "$formula_path"
           sed -i '' "s/sha256 \".*\"/sha256 \"$FILE_SHA\"/" "$formula_path"
           msg="Update lumos from $BREW_VERSION to $LUMOS_VERSION"
+          if [ "${{ github.event.inputs.branchName }}" != "main" ]; then
+            msg="$msg (prerelease)"
+          fi
           git commit -am "$msg"
           git push
 
