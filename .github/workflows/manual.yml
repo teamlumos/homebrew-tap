@@ -61,6 +61,7 @@ jobs:
       - run: pwd
       
       - name: Create tag & release
+        id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -70,6 +71,7 @@ jobs:
           if [ "${{ github.event.inputs.branchName }}" != "main" ]; then
               TAG=$LUMOS_VERSION-prerelease
           fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           if [ $(git tag -l "$TAG") ]; then
               echo "Tag $TAG already created, updating file"
               gh release edit $TAG "$RELEASE_FILE"
@@ -90,6 +92,7 @@ jobs:
           LUMOS_VERSION=${{ steps.install-dependencies.outputs.lumos-version }}
           BREW_VERSION=${{ steps.install-dependencies.outputs.brew-version }}
           FILE_SHA=${{ steps.build.outputs.file-sha }}
+          TAG=${{ steps.release.outputs.tag }}
           formula_path="./Formula/lumos.rb"
           if [ "${{ github.event.inputs.branchName }}" != "main" ]; then
             echo "Updating prerelease formula"
@@ -97,12 +100,9 @@ jobs:
           else
             echo "Updating stable formula"
           fi
-          sed -i '' "s/$BREW_VERSION/$LUMOS_VERSION/" "$formula_path"
+          sed -i '' "s/$BREW_VERSION/$TAG/" "$formula_path"
           sed -i '' "s/sha256 \".*\"/sha256 \"$FILE_SHA\"/" "$formula_path"
-          msg="Update lumos from $BREW_VERSION to $LUMOS_VERSION"
-          if [ "${{ github.event.inputs.branchName }}" != "main" ]; then
-            msg="$msg (prerelease)"
-          fi
+          msg="Update lumos from $BREW_VERSION to $TAG"
           git commit -am "$msg"
           git push
 
