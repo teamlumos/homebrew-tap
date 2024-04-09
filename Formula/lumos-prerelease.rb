@@ -3,7 +3,7 @@ class LumosPrerelease < Formula
     desc "Lumos CLI"
     homepage "https://github.com/teamlumos/homebrew-tap"
     url "https://github.com/teamlumos/homebrew-tap/releases/download/0.9.0/lumos.tar.gz"
-    sha256 "5ac28b71c28608117ae0501ac7c365c2dbdd1a9a61f1094bcadad4509ae0d068"
+    sha256 "dd019c37816119e941a0a4af924baa4a3a58845955f3f423f4adbb56a9871234"
     version "0.9.0"
 
     def install
