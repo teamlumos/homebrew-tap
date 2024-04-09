@@ -33,7 +33,7 @@ jobs:
           brew install coreutils
           brew install gh
           if [ "${{ github.event.inputs.branchName }}" != "main" ]; then
-              brew install teamlumos/tap/lumos-prelease
+              brew install teamlumos/tap/lumos-prerelease
           else
               brew install teamlumos/tap/lumos
           fi
