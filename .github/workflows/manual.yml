@@ -32,7 +32,11 @@ jobs:
           pip install poetry
           brew install coreutils
           brew install gh
-          brew install teamlumos/tap/lumos
+          if [ "${{ github.event.inputs.branchName }}" != "main" ]; then
+              brew install teamlumos/tap/lumos-prerelease
+          else
+              brew install teamlumos/tap/lumos
+          fi
           poetry install
           BREW_VERSION=$(lumos --version | awk '{print $3}')
           echo Current version on brew: $BREW_VERSION
@@ -67,9 +71,23 @@ jobs:
           RELEASE_FILE=${{ steps.build.outputs.release-file }}
           LUMOS_VERSION=${{ steps.install-dependencies.outputs.lumos-version }}
           echo "Creating tag & release $LUMOS_VERSION"
-          git tag $LUMOS_VERSION
-          git push --tags
-          gh release create $LUMOS_VERSION --title "$LUMOS_VERSION" --notes "$LUMOS_VERSION" --latest "$RELEASE_FILE"
+          TAG=$LUMOS_VERSION
+          if [ "${{ github.event.inputs.branchName }}" != "main" ]; then
+              TAG=$LUMOS_VERSION-prerelease
+          fi
+          if [ $(git tag -l "$TAG") ]; then
+              echo "Tag already created, updating file"
+              gh release edit $TAG "$RELEASE_FILE"
+          else
+              git tag $TAG
+              git push --tags
+              if [ "${{ github.event.inputs.branchName }}" != "main" ]; then
+                  gh release create $TAG --title "$TAG" --notes "$TAG" "$RELEASE_FILE"
+              else
+                  gh release create $TAG --title "$TAG" --notes "$TAG" --latest "$RELEASE_FILE"
+              fi
+          fi
+          
      
       - name: Update formula
         run: |
