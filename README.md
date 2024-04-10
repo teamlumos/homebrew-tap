@@ -4,6 +4,7 @@ brew install teamlumos/tap/lumos
 ```
 
 # Documentation
+## Full documentation available in the CLI and at [developer reference](https://developers.lumos.com/reference/lumos-cli-commands)
 ### Examples
 
 You can run commands like:
@@ -31,6 +32,15 @@ you can narrow down the options presented to you when requesting by using:
 ### Commands
 #### `lumos whoami`
 Give current user details
+
+#### `lumos login`
+Log in with OAuth
+
+#### `lumos setup`
+Setup/re-setup authentication with OAuth or API key
+
+#### `lumos logout`
+Clears stored credentials
 
 #### `lumos list [apps|permissions|users|requests] [--like]`
 Lists details of the corresponding collections, with `--like` narrowing the list on partial match (i.e. partial match on name or email for users, partial match on app name, partial match on permissions name).
