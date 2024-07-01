@@ -2,9 +2,9 @@ class Lumos < Formula
 
     desc "Lumos CLI"
     homepage "https://github.com/teamlumos/homebrew-tap"
-    url "https://github.com/teamlumos/homebrew-tap/releases/download/1.1.2/lumos.tar.gz"
-    sha256 "4f96b68689409ec6efec7271c56abcca96da30134097080ca7b115636600804f"
-    version "1.1.2"
+    url "https://github.com/teamlumos/homebrew-tap/releases/download/2.0.0/lumos.tar.gz"
+    sha256 "9c695b4d95421cdb53aadea28cee060887c1b7eeeda67693ba4a511757a1fc03"
+    version "2.0.0"
 
     def install
         libexec.install Dir["*"]
