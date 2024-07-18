@@ -38,6 +38,7 @@ jobs:
               brew install teamlumos/tap/lumos
           fi
           poetry install
+          poetry run pytest
           BREW_VERSION=$(lumos --version | awk '{print $3}')
           echo Current version on brew: $BREW_VERSION
           LUMOS_VERSION=$(poetry run python -m lumos --version | awk '{print $3}')
