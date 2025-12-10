@@ -25,13 +25,14 @@ Your release workflow in `teamlumos/lumos-cli` must create assets with these exa
 
 Each tarball should contain a single `lumos` binary at the root level.
 
-### 2. Required Secret
+### 2. Required Secrets
 
-Add this secret to the `teamlumos/lumos-cli` repository:
+The workflow uses the same GitHub App as your release workflow. Verify these secrets exist in `teamlumos/lumos-cli`:
 
-- **`HOMEBREW_TAP_TOKEN`**: A GitHub Personal Access Token (classic) with `repo` scope
-  - Must have write access to `teamlumos/homebrew-tap`
-  - [Create a PAT here](https://github.com/settings/tokens)
+- **`GH_BOT_CLIENT_ID`**: GitHub App ID
+- **`GH_BOT_PRIVATE_KEY`**: GitHub App private key
+
+These should already be configured for your release workflow (e.g., the `lumos-automations` GitHub App). The app needs write access to `teamlumos/homebrew-tap`
 
 ## Integration Methods
 
@@ -51,7 +52,8 @@ jobs:
       version: ${{ github.event.release.tag_name }}
       prerelease: ${{ github.event.release.prerelease }}
     secrets:
-      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      GH_BOT_CLIENT_ID: ${{ secrets.GH_BOT_CLIENT_ID }}
+      GH_BOT_PRIVATE_KEY: ${{ secrets.GH_BOT_PRIVATE_KEY }}
 ```
 
 ### Method 2: Using `repository_dispatch`
@@ -59,16 +61,25 @@ jobs:
 If you need more control, trigger via repository dispatch:
 
 ```yaml
-- name: Trigger Homebrew Formula Update
-  run: |
-    VERSION="${{ github.event.release.tag_name }}"
-    VERSION="${VERSION#v}"  # Remove 'v' prefix if present
-    
-    curl -X POST \
-      -H "Authorization: token ${{ secrets.HOMEBREW_TAP_TOKEN }}" \
-      -H "Accept: application/vnd.github.v3+json" \
-      https://api.github.com/repos/teamlumos/homebrew-tap/dispatches \
-      -d "{\"event_type\":\"version-bump\",\"client_payload\":{\"version\":\"${VERSION}\",\"prerelease\":${{ github.event.release.prerelease }}}}"
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.GH_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.GH_BOT_PRIVATE_KEY }}
+      
+      - name: Trigger Homebrew Formula Update
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"  # Remove 'v' prefix if present
+          
+          curl -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/teamlumos/homebrew-tap/dispatches \
+            -d "{\"event_type\":\"version-bump\",\"client_payload\":{\"version\":\"${VERSION}\",\"prerelease\":${{ github.event.release.prerelease }}}}"
 ```
 
 Then add this trigger to `bump-version.yml`:
@@ -147,7 +158,8 @@ jobs:
       version: ${{ github.event.release.tag_name }}
       prerelease: ${{ github.event.release.prerelease }}
     secrets:
-      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      GH_BOT_CLIENT_ID: ${{ secrets.GH_BOT_CLIENT_ID }}
+      GH_BOT_PRIVATE_KEY: ${{ secrets.GH_BOT_PRIVATE_KEY }}
 ```
 
 ## Version Format
@@ -198,9 +210,10 @@ If assets are missing for certain platforms, the workflow will:
 ### Authentication Issues
 
 If you see `403 Forbidden` errors:
-- Verify `HOMEBREW_TAP_TOKEN` is set correctly
-- Check the token has `repo` scope
-- Ensure the token hasn't expired
+- Verify `GH_BOT_CLIENT_ID` and `GH_BOT_PRIVATE_KEY` are set correctly
+- Check the GitHub App has write access to `teamlumos/homebrew-tap`
+- Ensure the private key is valid and not expired
+- Verify the app is installed on the `teamlumos` organization
 
 ### Checksum Mismatches
 

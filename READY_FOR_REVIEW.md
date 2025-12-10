@@ -65,10 +65,11 @@
 
 ### For `teamlumos/lumos-cli` Repository
 
-**Step 1:** Add secret
-- Go to Settings → Secrets → Actions
-- Name: `HOMEBREW_TAP_TOKEN`
-- Value: GitHub PAT with `repo` scope
+**Step 1:** Verify GitHub App secrets (already configured)
+- Go to Settings → Secrets → Actions  
+- Verify `GH_BOT_CLIENT_ID` exists
+- Verify `GH_BOT_PRIVATE_KEY` exists
+- These are the same credentials used in your release workflow
 
 **Step 2:** Add to `.github/workflows/release.yml`
 ```yaml
@@ -80,7 +81,8 @@ jobs:
       version: ${{ github.event.release.tag_name }}
       prerelease: ${{ github.event.release.prerelease }}
     secrets:
-      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      GH_BOT_CLIENT_ID: ${{ secrets.GH_BOT_CLIENT_ID }}
+      GH_BOT_PRIVATE_KEY: ${{ secrets.GH_BOT_PRIVATE_KEY }}
 ```
 
 **Step 3:** Ensure release assets match naming convention
