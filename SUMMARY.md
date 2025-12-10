@@ -71,7 +71,8 @@ jobs:
       version: "2.1.3"
       prerelease: false
     secrets:
-      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      GH_BOT_CLIENT_ID: ${{ secrets.GH_BOT_CLIENT_ID }}
+      GH_BOT_PRIVATE_KEY: ${{ secrets.GH_BOT_PRIVATE_KEY }}
 ```
 
 ### 3. Automated Checksums
@@ -109,9 +110,9 @@ Workflow automatically:
 
 ## 📋 Required Setup in CLI Repo
 
-### 1. Add Secret
-**Name:** `HOMEBREW_TAP_TOKEN`  
-**Value:** GitHub PAT (classic) with `repo` scope  
+### 1. Verify GitHub App Secrets (Already Set Up)
+**Secrets:** `GH_BOT_CLIENT_ID` and `GH_BOT_PRIVATE_KEY`  
+**Purpose:** Uses same GitHub App as release workflow  
 **Location:** `teamlumos/lumos-cli` → Settings → Secrets → Actions
 
 ### 2. Update Release Workflow
@@ -125,7 +126,8 @@ jobs:
       version: ${{ github.event.release.tag_name }}
       prerelease: ${{ github.event.release.prerelease }}
     secrets:
-      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      GH_BOT_CLIENT_ID: ${{ secrets.GH_BOT_CLIENT_ID }}
+      GH_BOT_PRIVATE_KEY: ${{ secrets.GH_BOT_PRIVATE_KEY }}
 ```
 
 ### 3. Ensure Asset Naming
@@ -192,7 +194,7 @@ See `TESTING_CHECKLIST.md` for complete testing guide.
 
 - [ ] Review changes in this PR
 - [ ] Merge PR to `main` in `homebrew-tap`
-- [ ] Add `HOMEBREW_TAP_TOKEN` secret in CLI repo
+- [ ] Verify GitHub App secrets exist in CLI repo (should already be configured)
 - [ ] Update CLI release workflow
 - [ ] Test with prerelease
 - [ ] Test with stable release

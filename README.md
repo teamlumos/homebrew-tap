@@ -49,7 +49,8 @@ jobs:
           version: ${{ github.event.release.tag_name }}  # e.g., "2.1.3"
           prerelease: ${{ github.event.release.prerelease }}  # true/false
         secrets:
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          GH_BOT_CLIENT_ID: ${{ secrets.GH_BOT_CLIENT_ID }}
+          GH_BOT_PRIVATE_KEY: ${{ secrets.GH_BOT_PRIVATE_KEY }}
 ```
 
 #### Complete Example
@@ -115,7 +116,7 @@ jobs:
         with:
           owner: teamlumos
           repo: homebrew-tap
-          github_token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          github_token: ${{ secrets.GH_BOT_TOKEN }}
           workflow_file_name: bump-version.yml
           ref: main
           wait_interval: 10
@@ -138,9 +139,12 @@ You can also manually trigger the version bump from the GitHub Actions UI:
 
 ### Required Secrets
 
-The calling repository (`teamlumos/lumos-cli`) needs the following secret:
+The calling repository (`teamlumos/lumos-cli`) needs the following secrets:
 
-- `HOMEBREW_TAP_TOKEN`: A GitHub Personal Access Token (PAT) with `repo` scope for the `teamlumos/homebrew-tap` repository
+- `GH_BOT_CLIENT_ID`: GitHub App ID (same app used in your release workflow)
+- `GH_BOT_PRIVATE_KEY`: GitHub App private key (same app used in your release workflow)
+
+These should be the same GitHub App credentials you use for releases (e.g., `lumos-automations`)
 
 ### Release Asset Naming Convention
 

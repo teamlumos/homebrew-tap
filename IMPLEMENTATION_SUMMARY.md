@@ -155,7 +155,8 @@ jobs:
       version: ${{ github.event.release.tag_name }}
       prerelease: ${{ github.event.release.prerelease }}
     secrets:
-      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      GH_BOT_CLIENT_ID: ${{ secrets.GH_BOT_CLIENT_ID }}
+      GH_BOT_PRIVATE_KEY: ${{ secrets.GH_BOT_PRIVATE_KEY }}
 ```
 
 ---
@@ -164,9 +165,10 @@ jobs:
 
 ### In `teamlumos/lumos-cli`:
 
-1. **Add Secret:** `HOMEBREW_TAP_TOKEN`
-   - GitHub PAT (classic) with `repo` scope
-   - Write access to `teamlumos/homebrew-tap`
+1. **Verify Secrets:** GitHub App credentials (already set up for releases)
+   - `GH_BOT_CLIENT_ID` - GitHub App ID
+   - `GH_BOT_PRIVATE_KEY` - GitHub App private key
+   - App needs write access to `teamlumos/homebrew-tap`
 
 2. **Release Asset Names:**
    - Must match exactly: `lumos-{os}-{arch}.tar.gz`
@@ -234,7 +236,7 @@ brew test lumos
 
 ## Next Steps
 
-1. Set up `HOMEBREW_TAP_TOKEN` secret in `teamlumos/lumos-cli`
+1. Verify GitHub App secrets in `teamlumos/lumos-cli` (should already exist)
 2. Integrate the workflow call into your release workflow
 3. Test with a prerelease to verify everything works
 4. Update your release process documentation

@@ -71,14 +71,16 @@ We've completely redesigned the Homebrew formula update process to support multi
 
 ### For the CLI Repository (`teamlumos/lumos-cli`)
 
-#### Step 1: Add Secret
+#### Step 1: Verify GitHub App Secrets
+
+The workflow uses the same GitHub App as your release workflow:
 
 1. Go to `teamlumos/lumos-cli` → Settings → Secrets → Actions
-2. Click "New repository secret"
-3. Name: `HOMEBREW_TAP_TOKEN`
-4. Value: GitHub PAT (classic) with `repo` scope
-   - [Create one here](https://github.com/settings/tokens)
-   - Must have write access to `teamlumos/homebrew-tap`
+2. Verify these secrets exist:
+   - `GH_BOT_CLIENT_ID` (GitHub App ID)
+   - `GH_BOT_PRIVATE_KEY` (GitHub App private key)
+3. These should already be configured for your release workflow
+4. Ensure the GitHub App has write access to `teamlumos/homebrew-tap`
 
 #### Step 2: Update Release Workflow
 
@@ -96,7 +98,8 @@ jobs:
       version: ${{ github.event.release.tag_name }}
       prerelease: ${{ github.event.release.prerelease }}
     secrets:
-      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      GH_BOT_CLIENT_ID: ${{ secrets.GH_BOT_CLIENT_ID }}
+      GH_BOT_PRIVATE_KEY: ${{ secrets.GH_BOT_PRIVATE_KEY }}
 ```
 
 #### Step 3: Ensure Asset Names Match
@@ -255,11 +258,12 @@ The formula now automatically detects their platform and downloads the correct b
 
 ### "Permission denied" Error
 
-**Cause:** Invalid or expired `HOMEBREW_TAP_TOKEN`
+**Cause:** Invalid GitHub App credentials or insufficient permissions
 
 **Solution:**
-- Regenerate token with `repo` scope
-- Update secret in CLI repository
+- Verify `GH_BOT_CLIENT_ID` and `GH_BOT_PRIVATE_KEY` are set correctly
+- Ensure GitHub App has write access to `teamlumos/homebrew-tap`
+- Verify the app is installed on the `teamlumos` organization
 
 ### Checksum Mismatch
 

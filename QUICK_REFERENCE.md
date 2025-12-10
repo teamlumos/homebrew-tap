@@ -14,7 +14,8 @@ jobs:
       version: ${{ github.event.release.tag_name }}
       prerelease: ${{ github.event.release.prerelease }}
     secrets:
-      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      GH_BOT_CLIENT_ID: ${{ secrets.GH_BOT_CLIENT_ID }}
+      GH_BOT_PRIVATE_KEY: ${{ secrets.GH_BOT_PRIVATE_KEY }}
 ```
 
 ## Required Release Assets
@@ -30,13 +31,14 @@ lumos-linux-arm64.tar.gz    # Linux ARM64
 
 Each tarball contains a single `lumos` binary.
 
-## Required Secret
+## Required Secrets
 
 Set in `teamlumos/lumos-cli` repository settings:
 
-- **Name:** `HOMEBREW_TAP_TOKEN`
-- **Value:** GitHub PAT (classic) with `repo` scope
-- **Access:** Write access to `teamlumos/homebrew-tap`
+- **`GH_BOT_CLIENT_ID`** - GitHub App ID (already used in release workflow)
+- **`GH_BOT_PRIVATE_KEY`** - GitHub App private key (already used in release workflow)
+
+Uses the same GitHub App as your release workflow (e.g., `lumos-automations`)
 
 ## What It Does
 

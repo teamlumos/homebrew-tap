@@ -106,7 +106,8 @@ jobs:
       version: ${{ github.event.release.tag_name }}
       prerelease: ${{ github.event.release.prerelease }}
     secrets:
-      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      GH_BOT_CLIENT_ID: ${{ secrets.GH_BOT_CLIENT_ID }}
+      GH_BOT_PRIVATE_KEY: ${{ secrets.GH_BOT_PRIVATE_KEY }}
 ```
 
 ### Option 2: Manual Trigger
@@ -210,8 +211,8 @@ Missing Asset
    └── Formula supports partial platforms
 
 Authentication Failure
-   ├── Check HOMEBREW_TAP_TOKEN
-   ├── Verify token permissions
+   ├── Check GitHub App credentials
+   ├── Verify app permissions
    └── Workflow fails with clear error
 
 Checksum Mismatch (end user)
@@ -228,10 +229,10 @@ Checksum Verification
    ├── Embedded in formula
    └── Verified by Homebrew on install
 
-Token Requirements
-   ├── HOMEBREW_TAP_TOKEN
-   ├── Scope: repo (full control)
-   └── Access: teamlumos/homebrew-tap
+GitHub App Authentication
+   ├── GH_BOT_CLIENT_ID (App ID)
+   ├── GH_BOT_PRIVATE_KEY (App private key)
+   └── Access: teamlumos/homebrew-tap (write)
 
 Asset Integrity
    ├── Downloaded from GitHub

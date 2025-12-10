@@ -215,10 +215,11 @@ After merging this PR, complete these steps in `teamlumos/lumos-cli`:
 
 ### Required Changes
 
-- [ ] Add `HOMEBREW_TAP_TOKEN` secret
+- [ ] Verify GitHub App secrets exist
   - Go to Settings → Secrets → Actions
-  - Name: `HOMEBREW_TAP_TOKEN`
-  - Value: GitHub PAT with `repo` scope
+  - Verify: `GH_BOT_CLIENT_ID` (GitHub App ID)
+  - Verify: `GH_BOT_PRIVATE_KEY` (GitHub App private key)
+  - These should already exist from your release workflow
   
 - [ ] Update `release.yml` workflow
   - Add `update-homebrew` job
@@ -264,16 +265,15 @@ gh release view v2.1.3 --repo teamlumos/lumos-cli
 
 ### Issue: "Permission denied" when pushing
 
-**Cause:** Invalid `HOMEBREW_TAP_TOKEN`
+**Cause:** Invalid GitHub App credentials or insufficient permissions
 
 **Fix:**
 ```bash
-# Verify token has correct permissions:
-# 1. Go to https://github.com/settings/tokens
-# 2. Find the token used for HOMEBREW_TAP_TOKEN
-# 3. Verify it has 'repo' scope
-# 4. Verify it hasn't expired
-# 5. Update secret if needed
+# Verify GitHub App configuration:
+# 1. Check GH_BOT_CLIENT_ID and GH_BOT_PRIVATE_KEY secrets are set
+# 2. Verify the GitHub App is installed on teamlumos organization
+# 3. Verify the app has write access to homebrew-tap repository
+# 4. Check the private key is valid and not expired
 ```
 
 ### Issue: Checksum mismatch on install

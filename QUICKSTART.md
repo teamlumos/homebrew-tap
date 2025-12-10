@@ -19,13 +19,16 @@ Now works on:
 
 ## For CLI Repository Maintainers
 
-### Step 1: Add Secret (One-time setup)
+### Step 1: Verify Secrets (One-time setup)
+
+The workflow uses the same GitHub App as your release workflow. Verify these secrets exist in `teamlumos/lumos-cli`:
 
 1. Go to https://github.com/teamlumos/lumos-cli/settings/secrets/actions
-2. Click "New repository secret"
-3. Name: `HOMEBREW_TAP_TOKEN`
-4. Value: [Create a GitHub PAT](https://github.com/settings/tokens) with `repo` scope
-5. Click "Add secret"
+2. Verify these secrets exist:
+   - `GH_BOT_CLIENT_ID` (GitHub App ID)
+   - `GH_BOT_PRIVATE_KEY` (GitHub App private key)
+
+These should already be set up for your release workflow (e.g., `lumos-automations` app)
 
 ### Step 2: Update Release Workflow
 
@@ -43,7 +46,8 @@ jobs:
       version: ${{ github.event.release.tag_name }}
       prerelease: ${{ github.event.release.prerelease }}
     secrets:
-      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      GH_BOT_CLIENT_ID: ${{ secrets.GH_BOT_CLIENT_ID }}
+      GH_BOT_PRIVATE_KEY: ${{ secrets.GH_BOT_PRIVATE_KEY }}
 ```
 
 ### Step 3: Ensure Release Assets Match
@@ -101,7 +105,7 @@ Done! The formula updates automatically.
 **Fix:** Check your release has all 4 platform tarballs
 
 **Problem:** "Permission denied" when pushing  
-**Fix:** Verify `HOMEBREW_TAP_TOKEN` is set and has `repo` scope
+**Fix:** Verify GitHub App secrets (`GH_BOT_CLIENT_ID` and `GH_BOT_PRIVATE_KEY`) are set correctly and app has write access to homebrew-tap
 
 **Problem:** Checksum mismatch on install  
 **Fix:** Re-run the workflow to recalculate checksums
@@ -110,7 +114,7 @@ Done! The formula updates automatically.
 
 ## ✅ Success Checklist
 
-- [ ] Secret added to CLI repo
+- [ ] GitHub App secrets verified in CLI repo
 - [ ] Release workflow updated
 - [ ] Release assets have correct names
 - [ ] Test release created
