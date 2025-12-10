@@ -1,0 +1,189 @@
+name: Bump Homebrew Formula Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to bump to (e.g., 2.1.3)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Is this a prerelease?'
+        required: false
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version to bump to (e.g., 2.1.3)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Is this a prerelease?'
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      HOMEBREW_TAP_TOKEN:
+        required: true
+
+jobs:
+  bump-version:
+    name: Update Homebrew Formula
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout homebrew-tap
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Download release assets and calculate checksums
+        id: checksums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ inputs.version }}"
+          IS_PRERELEASE="${{ inputs.prerelease }}"
+          
+          # Determine tag based on prerelease flag
+          if [ "$IS_PRERELEASE" == "true" ]; then
+            TAG="${VERSION}-prerelease"
+          else
+            TAG="${VERSION}"
+          fi
+          
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Downloading assets for version $TAG from teamlumos/lumos-cli"
+          
+          # Create temp directory for downloads
+          mkdir -p /tmp/downloads
+          cd /tmp/downloads
+          
+          # Define platforms
+          PLATFORMS=(
+            "darwin-amd64:macos-intel"
+            "darwin-arm64:macos-arm"
+            "linux-amd64:linux-amd64"
+            "linux-arm64:linux-arm64"
+          )
+          
+          # Download each platform asset and calculate SHA256
+          for platform_info in "${PLATFORMS[@]}"; do
+            IFS=':' read -r platform label <<< "$platform_info"
+            asset_name="lumos-${platform}.tar.gz"
+            
+            echo "Downloading ${asset_name}..."
+            gh release download "$TAG" \
+              --repo teamlumos/lumos-cli \
+              --pattern "${asset_name}" \
+              --output "${asset_name}" || {
+                echo "Warning: Failed to download ${asset_name}, it may not exist"
+                continue
+              }
+            
+            if [ -f "${asset_name}" ]; then
+              sha=$(sha256sum "${asset_name}" | cut -d ' ' -f1)
+              echo "${label}_sha=${sha}" >> "$GITHUB_OUTPUT"
+              echo "✓ ${label}: ${sha}"
+            fi
+          done
+
+      - name: Update formula
+        run: |
+          VERSION="${{ inputs.version }}"
+          TAG="${{ steps.checksums.outputs.tag }}"
+          IS_PRERELEASE="${{ inputs.prerelease }}"
+          
+          # Determine which formula to update
+          if [ "$IS_PRERELEASE" == "true" ]; then
+            FORMULA_PATH="./Formula/lumos-prerelease.rb"
+            FORMULA_CLASS="LumosPrerelease"
+          else
+            FORMULA_PATH="./Formula/lumos.rb"
+            FORMULA_CLASS="Lumos"
+          fi
+          
+          echo "Updating formula at $FORMULA_PATH to version $VERSION"
+          
+          # Get checksums
+          MACOS_INTEL_SHA="${{ steps.checksums.outputs.macos-intel_sha }}"
+          MACOS_ARM_SHA="${{ steps.checksums.outputs.macos-arm_sha }}"
+          LINUX_AMD64_SHA="${{ steps.checksums.outputs.linux-amd64_sha }}"
+          LINUX_ARM64_SHA="${{ steps.checksums.outputs.linux-arm64_sha }}"
+          
+          # Create the new formula
+          cat > "$FORMULA_PATH" << EOF
+          class ${FORMULA_CLASS} < Formula
+            desc "Lumos CLI - Command line interface for Lumos platform"
+            homepage "https://github.com/teamlumos/lumos-cli"
+            version "${VERSION}"
+            license "MIT"
+
+            on_macos do
+              if Hardware::CPU.intel?
+                url "https://github.com/teamlumos/lumos-cli/releases/download/${TAG}/lumos-darwin-amd64.tar.gz"
+                sha256 "${MACOS_INTEL_SHA}"
+              elsif Hardware::CPU.arm?
+                url "https://github.com/teamlumos/lumos-cli/releases/download/${TAG}/lumos-darwin-arm64.tar.gz"
+                sha256 "${MACOS_ARM_SHA}"
+              end
+            end
+
+            on_linux do
+              if Hardware::CPU.intel?
+                url "https://github.com/teamlumos/lumos-cli/releases/download/${TAG}/lumos-linux-amd64.tar.gz"
+                sha256 "${LINUX_AMD64_SHA}"
+              elsif Hardware::CPU.arm?
+                url "https://github.com/teamlumos/lumos-cli/releases/download/${TAG}/lumos-linux-arm64.tar.gz"
+                sha256 "${LINUX_ARM64_SHA}"
+              end
+            end
+
+            def install
+              bin.install "lumos"
+            end
+
+            test do
+              assert_match version.to_s, shell_output("#{bin}/lumos --version")
+            end
+          end
+          EOF
+          
+          echo "Formula updated successfully!"
+          cat "$FORMULA_PATH"
+
+      - name: Commit and push changes
+        run: |
+          VERSION="${{ inputs.version }}"
+          IS_PRERELEASE="${{ inputs.prerelease }}"
+          
+          if [ "$IS_PRERELEASE" == "true" ]; then
+            FORMULA_NAME="lumos-prerelease"
+          else
+            FORMULA_NAME="lumos"
+          fi
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add Formula/
+          git commit -m "chore: bump ${FORMULA_NAME} to ${VERSION}" || {
+            echo "No changes to commit"
+            exit 0
+          }
+          git push
+
+      - name: Summary
+        run: |
+          echo "### ✅ Formula Updated Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** ${{ steps.checksums.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Prerelease:** ${{ inputs.prerelease }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### Platform Checksums:" >> $GITHUB_STEP_SUMMARY
+          echo "- **macOS Intel:** \`${{ steps.checksums.outputs.macos-intel_sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **macOS ARM:** \`${{ steps.checksums.outputs.macos-arm_sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Linux AMD64:** \`${{ steps.checksums.outputs.linux-amd64_sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Linux ARM64:** \`${{ steps.checksums.outputs.linux-arm64_sha }}\`" >> $GITHUB_STEP_SUMMARY
