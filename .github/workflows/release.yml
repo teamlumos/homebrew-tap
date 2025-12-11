@@ -48,11 +48,26 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Get release info and update formula
+        id: update-formula
         env:
           GH_TOKEN: ${{ steps.lumos-cli-token.outputs.token }}
         run: |
-          VERSION="${{ github.event.client_payload.version || inputs.version }}"
-          PRERELEASE="${{ github.event.client_payload.prerelease || inputs.prerelease }}"
+          set -euo pipefail
+
+          # Get version from repository_dispatch or workflow_dispatch
+          VERSION="${{ github.event.client_payload.version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION="${{ inputs.version }}"
+          fi
+
+          PRERELEASE="${{ github.event.client_payload.prerelease }}"
+          if [ -z "$PRERELEASE" ]; then
+            PRERELEASE="${{ inputs.prerelease }}"
+          fi
+
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Using version: $VERSION, prerelease: $PRERELEASE"
+
           if [ "$PRERELEASE" = "true" ]; then
             FORMULA_FILE="Formula/lumos-prerelease.rb"
           else
@@ -60,31 +75,49 @@ jobs:
           fi
 
           # Get release assets with digests
-          ASSETS=$(gh release view v${VERSION} --repo teamlumos/lumos-cli --json assets)
-          
-          # Extract digest for each platform
+          echo "Fetching release v${VERSION} from teamlumos/lumos-cli..."
+          ASSETS=$(gh release view "v${VERSION}" --repo teamlumos/lumos-cli --json assets)
+
+          # Extract digest for each platform (formula uses darwin, not macos)
+          MACOS_ARM64_SHA256=$(echo "$ASSETS" | jq -r '.assets[] | select(.name == "lumos-darwin-arm64.tar.gz") | .digest' | cut -d: -f2)
           LINUX_AMD64_SHA256=$(echo "$ASSETS" | jq -r '.assets[] | select(.name == "lumos-linux-amd64.tar.gz") | .digest' | cut -d: -f2)
           LINUX_ARM64_SHA256=$(echo "$ASSETS" | jq -r '.assets[] | select(.name == "lumos-linux-arm64.tar.gz") | .digest' | cut -d: -f2)
-          MACOS_ARM64_SHA256=$(echo "$ASSETS" | jq -r '.assets[] | select(.name == "lumos-macos-arm64.tar.gz") | .digest' | cut -d: -f2)
-                    
-          # Update formula in place
-          sed -i "s/version \".*\"/version \"${VERSION}\"/" $FORMULA_FILE
-          sed -i "s|releases/download/v[^/]*/lumos-linux-amd64.tar.gz|releases/download/$VERSION/lumos-linux-amd64.tar.gz|g" $FORMULA_FILE
-          sed -i "s|releases/download/v[^/]*/lumos-linux-arm64.tar.gz|releases/download/$VERSION/lumos-linux-arm64.tar.gz|g" $FORMULA_FILE
-          sed -i "s|releases/download/v[^/]*/lumos-macos-arm64.tar.gz|releases/download/$VERSION/lumos-macos-arm64.tar.gz|g" $FORMULA_FILE
-          
-          # Update sha256 values - need to match them to their specific URL context
-          sed -i "/lumos-macos-arm64.tar.gz/!b; n; s/sha256 \".*\"/sha256 \"$MACOS_ARM64_SHA256\"/" $FORMULA_FILE
-          sed -i "/lumos-linux-amd64.tar.gz/!b; n; s/sha256 \".*\"/sha256 \"$LINUX_AMD64_SHA256\"/" $FORMULA_FILE
-          sed -i "/lumos-linux-arm64.tar.gz/!b; n; s/sha256 \".*\"/sha256 \"$LINUX_ARM64_SHA256\"/" $FORMULA_FILE
+
+          # Validate that all SHA256 values are present
+          echo "Extracted SHA256 values:"
+          echo "  macos-arm64: $MACOS_ARM64_SHA256"
+          echo "  linux-amd64: $LINUX_AMD64_SHA256"
+          echo "  linux-arm64: $LINUX_ARM64_SHA256"
+
+          if [ -z "$MACOS_ARM64_SHA256" ] || [ -z "$LINUX_AMD64_SHA256" ] || [ -z "$LINUX_ARM64_SHA256" ]; then
+            echo "::error::Missing SHA256 for one or more release assets. Ensure the release has all required assets."
+            exit 1
+          fi
+
+          # Update version
+          sed -i "s/version \".*\"/version \"${VERSION}\"/" "$FORMULA_FILE"
+
+          # Update URLs - match any version pattern (with or without v prefix, with or without prerelease suffix)
+          sed -i "s|releases/download/[^/]*/lumos-macos-arm64.tar.gz|releases/download/v${VERSION}/lumos-macos-arm64.tar.gz|g" "$FORMULA_FILE"
+          sed -i "s|releases/download/[^/]*/lumos-linux-amd64.tar.gz|releases/download/v${VERSION}/lumos-linux-amd64.tar.gz|g" "$FORMULA_FILE"
+          sed -i "s|releases/download/[^/]*/lumos-linux-arm64.tar.gz|releases/download/v${VERSION}/lumos-linux-arm64.tar.gz|g" "$FORMULA_FILE"
+
+          # Update sha256 values - match them to their specific URL context
+          sed -i "/lumos-macos-arm64.tar.gz/!b; n; s/sha256 \".*\"/sha256 \"$MACOS_ARM64_SHA256\"/" "$FORMULA_FILE"
+          sed -i "/lumos-linux-amd64.tar.gz/!b; n; s/sha256 \".*\"/sha256 \"$LINUX_AMD64_SHA256\"/" "$FORMULA_FILE"
+          sed -i "/lumos-linux-arm64.tar.gz/!b; n; s/sha256 \".*\"/sha256 \"$LINUX_ARM64_SHA256\"/" "$FORMULA_FILE"
 
           # Print the updated formula
-          cat $FORMULA_FILE
+          echo "Updated formula:"
+          cat "$FORMULA_FILE"
 
       - name: Commit and push
+        env:
+          VERSION: ${{ steps.update-formula.outputs.VERSION }}
         run: |
+          set -euo pipefail
           git config user.name "${{ steps.app-token.outputs.app-slug }}[bot]"
           git config user.email "${{ steps.bot-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com"
           git add Formula/
-          git commit -m "chore: update lumos to v${{ github.event.client_payload.version }}"
+          git commit -m "chore: update lumos to v${VERSION}"
           git push
