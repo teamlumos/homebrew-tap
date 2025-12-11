@@ -44,7 +44,11 @@ jobs:
         run: |
           VERSION="${{ github.event.client_payload.version || inputs.version }}"
           PRERELEASE="${{ github.event.client_payload.prerelease || inputs.prerelease }}"
-          FORMULA_FILE="${{ PRERELEASE ? "Formula/lumos-prerelease.rb" : "Formula/lumos.rb" }}"
+          if [ "$PRERELEASE" = "true" ]; then
+            FORMULA_FILE="Formula/lumos-prerelease.rb"
+          else
+            FORMULA_FILE="Formula/lumos.rb"
+          fi
 
           # Get release assets with digests
           ASSETS=$(gh release view v${VERSION} --repo teamlumos/lumos-cli --json assets)
