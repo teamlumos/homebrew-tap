@@ -1,0 +1,81 @@
+name: Bump Homebrew Formula Version
+
+on:
+  repository_dispatch:
+    types: [release]
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version to bump to (e.g., 2.1.3)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Is this a prerelease?'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  update-homebrew:
+    name: Update Homebrew Formula
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ secrets.GH_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.GH_BOT_PRIVATE_KEY }}
+
+      - name: Get bot user ID
+        id: bot-user-id
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: false
+
+      - name: Get release info and update formula
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ github.ref_name }}"
+          VERSION_NO_V="${VERSION#v}"
+          
+          # Get release assets with digests
+          ASSETS=$(gh release view $VERSION --repo teamlumos/lumos-cli --json assets)
+          
+          # Extract digest for each platform
+          LINUX_AMD64_SHA256=$(echo "$ASSETS" | jq -r '.assets[] | select(.name == "lumos-linux-amd64.tar.gz") | .digest' | cut -d: -f2)
+          LINUX_ARM64_SHA256=$(echo "$ASSETS" | jq -r '.assets[] | select(.name == "lumos-linux-arm64.tar.gz") | .digest' | cut -d: -f2)
+          MACOS_ARM64_SHA256=$(echo "$ASSETS" | jq -r '.assets[] | select(.name == "lumos-macos-arm64.tar.gz") | .digest' | cut -d: -f2)
+          
+          echo "Updating formula to $VERSION_NO_V"
+          echo "  linux-amd64: $LINUX_AMD64_SHA256"
+          echo "  linux-arm64: $LINUX_ARM64_SHA256"
+          echo "  macos-arm64: $MACOS_ARM64_SHA256"
+          
+          # Update formula in place
+          sed -i "s/version \".*\"/version \"$VERSION_NO_V\"/" Formula/lumos.rb
+          sed -i "s|releases/download/v[^/]*/lumos-linux-amd64.tar.gz|releases/download/$VERSION/lumos-linux-amd64.tar.gz|g" Formula/lumos.rb
+          sed -i "s|releases/download/v[^/]*/lumos-linux-arm64.tar.gz|releases/download/$VERSION/lumos-linux-arm64.tar.gz|g" Formula/lumos.rb
+          sed -i "s|releases/download/v[^/]*/lumos-macos-arm64.tar.gz|releases/download/$VERSION/lumos-macos-arm64.tar.gz|g" Formula/lumos.rb
+          
+          # Update sha256 values - need to match them to their specific URL context
+          # For macOS ARM64 (appears twice - for ARM and Intel via Rosetta)
+          sed -i "/lumos-macos-arm64.tar.gz/!b; n; s/sha256 \".*\"/sha256 \"$MACOS_ARM64_SHA256\"/" Formula/lumos.rb
+          # For Linux AMD64
+          sed -i "/lumos-linux-amd64.tar.gz/!b; n; s/sha256 \".*\"/sha256 \"$LINUX_AMD64_SHA256\"/" Formula/lumos.rb
+          # For Linux ARM64
+          sed -i "/lumos-linux-arm64.tar.gz/!b; n; s/sha256 \".*\"/sha256 \"$LINUX_ARM64_SHA256\"/" Formula/lumos.rb
+
+      - name: Commit and push
+        run: |
+          git config user.name "${{ steps.app-token.outputs.app-slug }}[bot]"
+          git config user.email "${{ steps.bot-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com"
+          git add Formula/lumos.rb
+          git commit -m "chore: update lumos to ${{ github.ref_name }}"
+          git push
