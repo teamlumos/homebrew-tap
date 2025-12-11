@@ -20,6 +20,16 @@ jobs:
     name: Update Homebrew Formula
     runs-on: ubuntu-latest
     steps:
+      # Token for accessing lumos-cli releases
+      - uses: actions/create-github-app-token@v2
+        id: lumos-cli-token
+        with:
+          app-id: ${{ secrets.GH_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.GH_BOT_PRIVATE_KEY }}
+          owner: teamlumos
+          repositories: lumos-cli
+
+      # Token for committing to homebrew-tap
       - uses: actions/create-github-app-token@v2
         id: app-token
         with:
@@ -40,7 +50,7 @@ jobs:
 
       - name: Get release info and update formula
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.lumos-cli-token.outputs.token }}
         run: |
           VERSION="${{ github.event.client_payload.version || inputs.version }}"
           PRERELEASE="${{ github.event.client_payload.prerelease || inputs.prerelease }}"
