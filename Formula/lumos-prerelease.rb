@@ -1,7 +1,7 @@
 class LumosPrerelease < Formula
   desc "Lumos CLI - Command line interface for Lumos platform"
   homepage "https://github.com/teamlumos/lumos-cli"
-  version "2.1.2"
+  version "2.3.0"
   license "MIT"
 
   on_macos do
@@ -17,10 +17,10 @@ class LumosPrerelease < Formula
   on_linux do
     if Hardware::CPU.intel?
       url "https://github.com/teamlumos/lumos-cli/releases/download/2.1.2-prerelease/lumos-linux-amd64.tar.gz"
-      sha256 "415a9c5ecca9d43642d1d5f82be0f3ed98c3f42a175a569988e2124ba521ebb7"
+      sha256 ""
     elsif Hardware::CPU.arm?
       url "https://github.com/teamlumos/lumos-cli/releases/download/2.1.2-prerelease/lumos-linux-arm64.tar.gz"
-      sha256 "415a9c5ecca9d43642d1d5f82be0f3ed98c3f42a175a569988e2124ba521ebb7"
+      sha256 ""
     end
   end
 
