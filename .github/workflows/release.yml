@@ -59,6 +59,7 @@ jobs:
           if [ -z "$VERSION" ]; then
             VERSION="${{ inputs.version }}"
           fi
+          VERSION_NUMBER="${VERSION#v}"
 
           PRERELEASE="${{ github.event.client_payload.prerelease }}"
           if [ -z "$PRERELEASE" ]; then
@@ -75,13 +76,13 @@ jobs:
           fi
 
           # Get release assets with digests
-          echo "Fetching release v${VERSION} from teamlumos/lumos-cli..."
-          ASSETS=$(gh release view "v${VERSION}" --repo teamlumos/lumos-cli --json assets)
+          echo "Fetching release ${VERSION} from teamlumos/lumos-cli..."
+          ASSETS=$(gh release view "${VERSION}" --repo teamlumos/lumos-cli --json assets)
 
           # Extract digest for each platform (asset names include version)
-          MACOS_ARM64_SHA256=$(echo "$ASSETS" | jq -r '.assets[] | select(.name == "lumos-macos-arm64-v'"${VERSION}"'.tar.gz") | .digest' | cut -d: -f2)
-          LINUX_AMD64_SHA256=$(echo "$ASSETS" | jq -r '.assets[] | select(.name == "lumos-linux-amd64-v'"${VERSION}"'.tar.gz") | .digest' | cut -d: -f2)
-          LINUX_ARM64_SHA256=$(echo "$ASSETS" | jq -r '.assets[] | select(.name == "lumos-linux-arm64-v'"${VERSION}"'.tar.gz") | .digest' | cut -d: -f2)
+          MACOS_ARM64_SHA256=$(echo "$ASSETS" | jq -r '.assets[] | select(.name == "lumos-macos-arm64-'"${VERSION}"'.tar.gz") | .digest' | cut -d: -f2)
+          LINUX_AMD64_SHA256=$(echo "$ASSETS" | jq -r '.assets[] | select(.name == "lumos-linux-amd64-'"${VERSION}"'.tar.gz") | .digest' | cut -d: -f2)
+          LINUX_ARM64_SHA256=$(echo "$ASSETS" | jq -r '.assets[] | select(.name == "lumos-linux-arm64-'"${VERSION}"'.tar.gz") | .digest' | cut -d: -f2)
 
           # Validate that all SHA256 values are present
           echo "Extracted SHA256 values:"
@@ -95,12 +96,12 @@ jobs:
           fi
 
           # Update version
-          sed -i "s/version \".*\"/version \"${VERSION}\"/" "$FORMULA_FILE"
+          sed -i "s/version \".*\"/version \"${VERSION_NUMBER}\"/" "$FORMULA_FILE"
 
           # Update URLs - match any version pattern and update to versioned asset names
-          sed -i "s|releases/download/[^/]*/lumos-macos-arm64[^\"]*\.tar\.gz|releases/download/v${VERSION}/lumos-macos-arm64-v${VERSION}.tar.gz|g" "$FORMULA_FILE"
-          sed -i "s|releases/download/[^/]*/lumos-linux-amd64[^\"]*\.tar\.gz|releases/download/v${VERSION}/lumos-linux-amd64-v${VERSION}.tar.gz|g" "$FORMULA_FILE"
-          sed -i "s|releases/download/[^/]*/lumos-linux-arm64[^\"]*\.tar\.gz|releases/download/v${VERSION}/lumos-linux-arm64-v${VERSION}.tar.gz|g" "$FORMULA_FILE"
+          sed -i "s|releases/download/[^/]*/lumos-macos-arm64[^\"]*\.tar\.gz|releases/download/${VERSION}/lumos-macos-arm64-${VERSION}.tar.gz|g" "$FORMULA_FILE"
+          sed -i "s|releases/download/[^/]*/lumos-linux-amd64[^\"]*\.tar\.gz|releases/download/${VERSION}/lumos-linux-amd64-${VERSION}.tar.gz|g" "$FORMULA_FILE"
+          sed -i "s|releases/download/[^/]*/lumos-linux-arm64[^\"]*\.tar\.gz|releases/download/${VERSION}/lumos-linux-arm64-${VERSION}.tar.gz|g" "$FORMULA_FILE"
 
           # Update sha256 values - match them to their specific URL context
           sed -i "/lumos-macos-arm64.*\.tar\.gz/!b; n; s/sha256 \".*\"/sha256 \"$MACOS_ARM64_SHA256\"/" "$FORMULA_FILE"
