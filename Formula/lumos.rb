@@ -20,7 +20,8 @@ class Lumos < Formula
   end
 
   def install
-    bin.install "lumos"
+    libexec.install "lumos", "_internal"
+    bin.write_exec_script libexec/"lumos"
   end
 
   test do
