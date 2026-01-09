@@ -1,21 +1,21 @@
 class Lumos < Formula
   desc "Lumos CLI - Command line interface for Lumos platform"
   homepage "https://github.com/teamlumos/lumos-cli"
-  version "2.3.0"
+  version "2.4.0"
   license "MIT"
 
   on_macos do
-    url "https://github.com/teamlumos/lumos-cli/releases/download/v2.3.0/lumos-macos-arm64-v2.3.0.tar.gz"
-    sha256 "9363d8fde4c1671f33dbb6a83b802fd0eaf7b2dec524a495190e7feebf81e457"
+    url "https://github.com/teamlumos/lumos-cli/releases/download/v2.4.0/lumos-macos-arm64-2.4.0.tar.gz"
+    sha256 "70eaf0d264b78f261becc0df1eed4f73511d2563b207c57532b77869237e3a72"
   end
 
   on_linux do
     if Hardware::CPU.intel?
-      url "https://github.com/teamlumos/lumos-cli/releases/download/v2.3.0/lumos-linux-amd64-v2.3.0.tar.gz"
-      sha256 "90794aa3f2ecf4c65f6fa9850992957ebc4397eb121b9b19b434dd6adef81671"
+      url "https://github.com/teamlumos/lumos-cli/releases/download/v2.4.0/lumos-linux-amd64-2.4.0.tar.gz"
+      sha256 "304a1a3ea8228afe12a693c3d89a51158d5eef692a611b5761ee52a0eed561d8"
     elsif Hardware::CPU.arm?
-      url "https://github.com/teamlumos/lumos-cli/releases/download/v2.3.0/lumos-linux-arm64-v2.3.0.tar.gz"
-      sha256 "34ada7ddfecbf538cd98a7c54497ec36398a797aaf32630a8f58d80c6720a165"
+      url "https://github.com/teamlumos/lumos-cli/releases/download/v2.4.0/lumos-linux-arm64-2.4.0.tar.gz"
+      sha256 "62d747fd11ac8fa7fdb73bfe67b17d01c511a8dd3507bcffd6deca2fed0fe6fa"
     end
   end
 
