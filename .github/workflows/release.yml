@@ -98,9 +98,9 @@ jobs:
           sed -i "s/version \".*\"/version \"${VERSION}\"/" "$FORMULA_FILE"
 
           # Update URLs - match any version pattern and update to versioned asset names
-          sed -i "s|releases/download/[^/]*/lumos-macos-arm64[^\"]*\.tar\.gz|releases/download/v${VERSION}/lumos-macos-arm64-${VERSION}.tar.gz|g" "$FORMULA_FILE"
-          sed -i "s|releases/download/[^/]*/lumos-linux-amd64[^\"]*\.tar\.gz|releases/download/v${VERSION}/lumos-linux-amd64-${VERSION}.tar.gz|g" "$FORMULA_FILE"
-          sed -i "s|releases/download/[^/]*/lumos-linux-arm64[^\"]*\.tar\.gz|releases/download/v${VERSION}/lumos-linux-arm64-${VERSION}.tar.gz|g" "$FORMULA_FILE"
+          sed -i "s|releases/download/[^/]*/lumos-macos-arm64[^\"]*\.tar\.gz|releases/download/v${VERSION}/lumos-macos-arm64-v${VERSION}.tar.gz|g" "$FORMULA_FILE"
+          sed -i "s|releases/download/[^/]*/lumos-linux-amd64[^\"]*\.tar\.gz|releases/download/v${VERSION}/lumos-linux-amd64-v${VERSION}.tar.gz|g" "$FORMULA_FILE"
+          sed -i "s|releases/download/[^/]*/lumos-linux-arm64[^\"]*\.tar\.gz|releases/download/v${VERSION}/lumos-linux-arm64-v${VERSION}.tar.gz|g" "$FORMULA_FILE"
 
           # Update sha256 values - match them to their specific URL context
           sed -i "/lumos-macos-arm64.*\.tar\.gz/!b; n; s/sha256 \".*\"/sha256 \"$MACOS_ARM64_SHA256\"/" "$FORMULA_FILE"
